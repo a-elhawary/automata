@@ -16,6 +16,7 @@ public class FiniteAutomata extends JPanel{
     ArrayList<Integer[]> transitionsStart;
     ArrayList<Integer[]> transitions;
     ArrayList<String> transitionText;
+    ArrayList<Boolean> transitionBool;
 
     public FiniteAutomata(){
         setLayout(null);
@@ -26,15 +27,24 @@ public class FiniteAutomata extends JPanel{
         transitions = new ArrayList<>();
         transitionsStart = new ArrayList<>();
         transitionText = new ArrayList<>();
+        transitionBool = new ArrayList<>();
     }
 
     public void paintComponent(Graphics g){
         for(int i = 0; i < transitions.size(); i++){
-            g.setColor(new Color(0x000000));
-            g.drawLine(transitionsStart.get(i)[0]+10, transitionsStart.get(i)[1]+10, transitions.get(i)[0]+10, transitions.get(i)[1]+10);
-            g.fillOval(transitions.get(i)[0] +8, transitions.get(i)[1]+8, 5, 5);
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.drawString(transitionText.get(i), (transitionsStart.get(i)[0] + transitions.get(i)[0] )/2, (transitionsStart.get(i)[1] + transitions.get(i)[1] )/2);
+            if(transitionBool.get(i)){
+                g.setColor(new Color(0x000000));
+                g.drawOval(transitionsStart.get(i)[0]-20, transitionsStart.get(i)[1]-20, 40, 40);
+                g.fillOval(transitions.get(i)[0] +8, transitions.get(i)[1]+8, 5, 5);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.drawString(transitionText.get(i), (transitionsStart.get(i)[0] -25), (transitionsStart.get(i)[1] -25));
+            }else{
+                g.setColor(new Color(0x000000));
+                g.drawLine(transitionsStart.get(i)[0]+10, transitionsStart.get(i)[1]+10, transitions.get(i)[0]+10, transitions.get(i)[1]+10);
+                g.fillOval(transitions.get(i)[0] +8, transitions.get(i)[1]+8, 5, 5);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.drawString(transitionText.get(i), (transitionsStart.get(i)[0] + transitions.get(i)[0] )/2, (transitionsStart.get(i)[1] + transitions.get(i)[1] )/2);
+            }
         }
         for(int i = 0; i < nodes.size(); i++){
             nodes.get(i).render(g);
@@ -57,15 +67,21 @@ public class FiniteAutomata extends JPanel{
     }
 
     public void addTransition(String input){
-        if(selectedIndex < 2) return;
+        if(selectedIndex < 1) return;
         if(input.isBlank()) return;
-        selectedIndex = 0;
-        finiteAutomata.addTransition(Integer.parseInt(selectedNodes[0].text.substring(1)), input.charAt(0), Integer.parseInt(selectedNodes[1].text.substring(1)));
+        if(selectedIndex > 1){
+            finiteAutomata.addTransition(Integer.parseInt(selectedNodes[0].text.substring(1)), input.charAt(0), Integer.parseInt(selectedNodes[1].text.substring(1)));
+            transitions.add(new Integer[]{selectedNodes[1].x, selectedNodes[1].y});
+            selectedNodes[1].isSelected = false;
+        }else{
+            finiteAutomata.addTransition(Integer.parseInt(selectedNodes[0].text.substring(1)), input.charAt(0), Integer.parseInt(selectedNodes[0].text.substring(1)));
+            transitions.add(new Integer[]{selectedNodes[0].x, selectedNodes[0].y});
+        }
         transitionsStart.add(new Integer[]{selectedNodes[0].x, selectedNodes[0].y});
-        transitions.add(new Integer[]{selectedNodes[1].x, selectedNodes[1].y});
         transitionText.add(input);
+        transitionBool.add(selectedIndex == 1);
+        selectedIndex = 0;
         selectedNodes[0].isSelected = false;
-        selectedNodes[1].isSelected = false;
         this.revalidate();
         this.repaint();
     }
